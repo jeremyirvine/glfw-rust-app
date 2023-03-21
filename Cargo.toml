@@ -1,0 +1,14 @@
+[package]
+name = "glfw-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+c_utf8 = "0.1.0"
+gl = "0.14.0"
+quote = "1.0.26"
+glcall_macro = { path = "glcall_macro" }
+
+[dependencies.glfw]
+version = "*"
+default-features = false
