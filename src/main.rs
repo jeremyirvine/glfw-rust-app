@@ -1,13 +1,20 @@
-use std::{sync::mpsc::Receiver, os::raw::c_void};
+#![cfg_attr(
+    all(
+        target_os = "windows",
+        not(debug_assertions)
+    ),
+    windows_subsystem = "windows"
+)]
+
+use std::{sync::mpsc::Receiver};
 
 use gl::types::GLuint;
-use glcall_macro::gl_call;
-use glfw::{Context, Key, Action, WindowHint, OpenGlProfileHint, WindowMode};
+use glfw::{Context, Key, Action, WindowHint, OpenGlProfileHint, WindowMode, SwapInterval};
 use glfw_app::ShaderBuilder;
 
 use glfw_app::gl_component::GLComponent;
-use glfw_app::gl_error::{gl_clear_errors, gl_log_errors};
 use glfw_app::index_buffer::IndexBuffer;
+use glfw_app::renderer::Renderer;
 use glfw_app::vertex_array::VertexArray;
 use glfw_app::vertex_buffer::VertexBuffer;
 use glfw_app::vertex_buffer_layout::VertexBufferLayout;
@@ -29,6 +36,8 @@ fn main() {
     window.make_current();
     window.set_key_polling(true);
     window.set_framebuffer_size_polling(true);
+
+    glfw.set_swap_interval(SwapInterval::Sync(1));
 
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
@@ -63,21 +72,27 @@ fn main() {
 
     shader.bind(); 
     shader.uniform_4f("u_Color", (1.0, 0.5, 0.0, 1.0));
+
+    let renderer = Renderer::new((0.3, 0.4, 0.8, 1.0));
+
+    let mut r = 0.0;
+    let mut inc = 0.05;
     while !window.should_close() {
         process_events(&mut window, &events);
 
-        gl_call!({
-            gl::ClearColor(0.2, 0.3, 0.3, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
-        });
+        renderer.clear();
 
         shader.bind();
-        gl_call!({
-            vao.bind();
-            ibo.bind();
-            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const c_void);
-        });
+        shader.uniform_4f("u_Color", (r, 0.3, 0.3, 1.0));
+        vao.bind();
+        ibo.bind();
+        renderer.draw(&vao, &ibo, &shader);
         shader.unbind();
+
+        if r < 0.0 || r > 1.0 {
+            inc *= -1.;
+        }
+        r += inc;
 
         window.swap_buffers();
         glfw.poll_events();
