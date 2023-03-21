@@ -1,6 +1,3 @@
-mod shader;
-mod gl_error;
-
 use std::{sync::mpsc::Receiver, os::raw::c_void, ptr};
 
 use gl::types::GLuint;
@@ -8,7 +5,10 @@ use glcall_macro::gl_call;
 use glfw::{Context, Key, Action, WindowHint, OpenGlProfileHint, WindowMode};
 use glfw_app::ShaderBuilder;
 
-use crate::gl_error::{gl_clear_errors, gl_log_errors};
+use glfw_app::gl_component::GLComponent;
+use glfw_app::gl_error::{gl_clear_errors, gl_log_errors};
+use glfw_app::index_buffer::IndexBuffer;
+use glfw_app::vertex_buffer::VertexBuffer;
 
 const SCREEN_HEIGHT: u32 = 800;
 const SCREEN_WIDTH: u32 = 800;
@@ -35,41 +35,26 @@ fn main() {
          0.5, -0.5, 0.0,
          0.5,  0.5, 0.0,
         -0.5,  0.5, 0.0,
-    ];
+    ]; 
 
     let indices: Vec<GLuint> = vec![
         0,1,2,
         2,3,0
     ];
 
-    let (mut vao, mut vbo, mut ibo) = (0, 0, 0);
+    let mut vao = 0;
 
     let shader = ShaderBuilder::default()
         .with_shader_source(include_str!("res/Default.glsl").into())
         .expect("Failed to build shader from source")
         .build();
 
+    let _vbo = VertexBuffer::new(&vertices);
+    let ibo = IndexBuffer::new(&indices);
+
     gl_call!({
         gl::GenVertexArrays(1, &mut vao);
         gl::BindVertexArray(vao);
-
-        gl::GenBuffers(1, &mut vbo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER, 
-            (vertices.len() * std::mem::size_of::<f64>()) as isize,
-            &vertices[0] as *const f32 as *const c_void,
-            gl::STATIC_DRAW
-        );
-
-        gl::GenBuffers(1, &mut ibo);
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ibo);
-        gl::BufferData(
-            gl::ELEMENT_ARRAY_BUFFER, 
-            (indices.len() * std::mem::size_of::<usize>()) as isize,
-            &indices[0] as *const GLuint as *const c_void,
-            gl::STATIC_DRAW
-        );
 
         gl::VertexAttribPointer(
             0, 
@@ -98,8 +83,7 @@ fn main() {
         shader.bind();
         gl_call!({
             gl::BindVertexArray(vao);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ibo);
-            //gl::DrawArrays(gl::TRIANGLES, 0, 3); 
+            ibo.bind();
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const c_void);
         });
         shader.unbind();

@@ -3,6 +3,8 @@
 use std::{ffi::CString, ptr};
 use gl::types::{GLchar, GLint};
 
+use crate::gl_component::GLComponent;
+
 pub enum ShaderType {
     None,
     Vertex,
@@ -73,19 +75,25 @@ pub struct Shader {
     renderer_id: u32,
 }
 
+impl GLComponent for Shader {
+    fn renderer_id(&self) -> u32 {
+        self.renderer_id
+    }
+
+    fn bind(&self) {
+        unsafe { gl::UseProgram(self.renderer_id) }
+    }
+
+    fn unbind(&self) {
+        unsafe { gl::UseProgram(0) }
+    }
+}
+
 impl Shader {
     fn uniform_location(&self, location: String) -> GLint {
         let cname = ::std::ffi::CString::new(location).expect("Failed to convert uniform location to CString");
         unsafe { gl::GetUniformLocation(self.renderer_id, cname.as_ptr()) }
-    }
-    
-    pub fn bind(&self) {
-        unsafe { gl::UseProgram(self.renderer_id) }
-    }
-
-    pub fn unbind(&self) {
-        unsafe { gl::UseProgram(0) }
-    }
+    } 
 
     pub fn uniform_4f(&self, location: impl Into<String>, val: (f32, f32, f32, f32)) {
         let (v0,v1,v2,v3) = val;
