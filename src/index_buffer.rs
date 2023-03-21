@@ -20,6 +20,12 @@ impl GLComponent for IndexBuffer {
     }
 }
 
+impl Drop for IndexBuffer {
+    fn drop(&mut self) {
+        gl_call!({ gl::DeleteVertexArrays(1, &mut self.renderer_id); });
+    }
+}
+
 impl IndexBuffer {
     pub fn new(data: &Vec<u32>) -> Self {
         let mut renderer_id = 0;

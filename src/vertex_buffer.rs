@@ -20,6 +20,12 @@ impl GLComponent for VertexBuffer {
     }
 }
 
+impl Drop for VertexBuffer {
+    fn drop(&mut self) {
+        gl_call!({ gl::DeleteVertexArrays(1, &mut self.renderer_id); });
+    }
+}
+
 impl VertexBuffer {
     pub fn new<T>(data: &Vec<T>) -> Self {
         let mut renderer_id = 0;

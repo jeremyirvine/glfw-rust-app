@@ -1,4 +1,4 @@
-use std::{sync::mpsc::Receiver, os::raw::c_void, ptr};
+use std::{sync::mpsc::Receiver, os::raw::c_void};
 
 use gl::types::GLuint;
 use glcall_macro::gl_call;
@@ -8,7 +8,9 @@ use glfw_app::ShaderBuilder;
 use glfw_app::gl_component::GLComponent;
 use glfw_app::gl_error::{gl_clear_errors, gl_log_errors};
 use glfw_app::index_buffer::IndexBuffer;
+use glfw_app::vertex_array::VertexArray;
 use glfw_app::vertex_buffer::VertexBuffer;
+use glfw_app::vertex_buffer_layout::VertexBufferLayout;
 
 const SCREEN_HEIGHT: u32 = 800;
 const SCREEN_WIDTH: u32 = 800;
@@ -42,33 +44,22 @@ fn main() {
         2,3,0
     ];
 
-    let mut vao = 0;
-
     let shader = ShaderBuilder::default()
         .with_shader_source(include_str!("res/Default.glsl").into())
         .expect("Failed to build shader from source")
         .build();
 
-    let _vbo = VertexBuffer::new(&vertices);
+    let layout = VertexBufferLayout::default().with_floats(3);
+    let mut vao = VertexArray::new();
+
+    let vbo = VertexBuffer::new(&vertices);
     let ibo = IndexBuffer::new(&indices);
 
-    gl_call!({
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
+    vao.add_buffer(&vbo, &layout);
 
-        gl::VertexAttribPointer(
-            0, 
-            3, 
-            gl::FLOAT, 
-            gl::FALSE, 
-            (3 * std::mem::size_of::<f32>()) as i32, 
-            ptr::null()
-        );
-        gl::EnableVertexAttribArray(0);
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-        gl::BindVertexArray(0);
-    });
+    vbo.unbind();
+    ibo.unbind();
+    vao.unbind();
 
     shader.bind(); 
     shader.uniform_4f("u_Color", (1.0, 0.5, 0.0, 1.0));
@@ -82,7 +73,7 @@ fn main() {
 
         shader.bind();
         gl_call!({
-            gl::BindVertexArray(vao);
+            vao.bind();
             ibo.bind();
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const c_void);
         });
