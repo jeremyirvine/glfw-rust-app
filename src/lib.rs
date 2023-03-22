@@ -9,6 +9,7 @@ pub mod vertex_buffer_layout;
 pub mod index_buffer;
 
 pub mod renderer;
+pub mod texture;
 
 pub mod shader;
 pub use shader::ShaderBuilder;

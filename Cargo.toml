@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 gl = "0.14.0"
 glcall_macro = { path = "glcall_macro" }
+stb_image = "0.2.5"
 
 [dependencies.glfw]
 version = "*"

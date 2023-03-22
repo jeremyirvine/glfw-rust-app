@@ -118,10 +118,15 @@ impl Shader {
         unsafe { gl::Uniform1f(location, val) }
     }
 
-    pub fn from_sources(fragment_src: String, vertex_src: String) -> Self {
+    pub fn uniform_1i(&self, location: impl Into<String>, val: i32) {
+        let location = self.uniform_location(location.into());
+        unsafe { gl::Uniform1i(location, val) }
+    }
+
+    pub fn from_sources(fragment_src: impl Into<String>, vertex_src: impl Into<String>) -> Self {
         let fragment_id = {
             let shader_id = unsafe { gl::CreateShader(gl::FRAGMENT_SHADER) };
-            let c_str_vert = CString::new(fragment_src).unwrap();
+            let c_str_vert = CString::new(fragment_src.into()).unwrap();
             unsafe { gl::ShaderSource(shader_id, 1, &c_str_vert.as_ptr(), ptr::null()) };
             unsafe { gl::CompileShader(shader_id) };
             
@@ -138,7 +143,7 @@ impl Shader {
 
         let vertex_id = {
             let shader_id = unsafe { gl::CreateShader(gl::VERTEX_SHADER) };
-            let c_str_vert = CString::new(vertex_src).unwrap();
+            let c_str_vert = CString::new(vertex_src.into()).unwrap();
             unsafe { gl::ShaderSource(shader_id, 1, &c_str_vert.as_ptr(), ptr::null()) };
             unsafe { gl::CompileShader(shader_id) };
             
