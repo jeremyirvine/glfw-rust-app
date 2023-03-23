@@ -1,6 +1,6 @@
-use std::ffi::c_void;
+use crate::gl_component::GLComponent;
 use glcall_macro::gl_call;
-use crate::{gl_component::GLComponent, gl_error::{gl_clear_errors, gl_log_errors}};
+use std::ffi::c_void;
 
 pub struct IndexBuffer {
     renderer_id: u32,
@@ -12,17 +12,23 @@ impl GLComponent for IndexBuffer {
     }
 
     fn bind(&self) {
-        gl_call!({ gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.renderer_id); });
+        gl_call!({
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.renderer_id);
+        });
     }
 
     fn unbind(&self) {
-        gl_call!({ gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0); });
+        gl_call!({
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+        });
     }
 }
 
 impl Drop for IndexBuffer {
     fn drop(&mut self) {
-        gl_call!({ gl::DeleteBuffers(1, &mut self.renderer_id); });
+        gl_call!({
+            gl::DeleteBuffers(1, &mut self.renderer_id);
+        });
     }
 }
 
@@ -33,14 +39,12 @@ impl IndexBuffer {
             gl::GenBuffers(1, &mut renderer_id);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, renderer_id);
             gl::BufferData(
-                gl::ELEMENT_ARRAY_BUFFER, 
+                gl::ELEMENT_ARRAY_BUFFER,
                 (data.len() * std::mem::size_of::<u32>()) as isize,
                 &data[0] as *const u32 as *const c_void,
-                gl::STATIC_DRAW
+                gl::STATIC_DRAW,
             );
         });
-        Self {
-            renderer_id,
-        }
+        Self { renderer_id }
     }
 }

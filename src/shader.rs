@@ -1,14 +1,16 @@
-#![allow(dead_code,unused)]
+#![allow(dead_code, unused)]
 
-use std::{ffi::CString, ptr};
 use gl::types::{GLchar, GLint};
+use glm::Matrix4;
+use nalgebra_glm::TMat4;
+use std::{ffi::CString, ptr};
 
 use crate::gl_component::GLComponent;
 
 pub enum ShaderType {
     None,
     Vertex,
-    Fragment
+    Fragment,
 }
 
 #[derive(Default)]
@@ -27,8 +29,7 @@ impl ShaderBuilder {
                 if line.contains("vertex") {
                     append_to_type = ShaderType::Vertex;
                     self.vertex_src = Some(String::new());
-                }
-                else if line.contains("fragment") {
+                } else if line.contains("fragment") {
                     append_to_type = ShaderType::Fragment;
                     self.fragment_src = Some(String::new());
                 }
@@ -38,7 +39,7 @@ impl ShaderBuilder {
                 match append_to_type {
                     ShaderType::Vertex => vert_src.push_str(line.clone()),
                     ShaderType::Fragment => frag_src.push_str(line),
-                    _ => {},
+                    _ => {}
                 }
             }
         }
@@ -63,11 +64,13 @@ impl ShaderBuilder {
     }
 
     pub fn build(&self) -> Shader {
-       if let (Some(frag_src), Some(vert_src)) = (self.fragment_src.clone(), self.vertex_src.clone()) {  
+        if let (Some(frag_src), Some(vert_src)) =
+            (self.fragment_src.clone(), self.vertex_src.clone())
+        {
             Shader::from_sources(frag_src, vert_src)
-       } else {
+        } else {
             panic!("");
-       }
+        }
     }
 }
 
@@ -91,24 +94,25 @@ impl GLComponent for Shader {
 
 impl Shader {
     fn uniform_location(&self, location: String) -> GLint {
-        let cname = ::std::ffi::CString::new(location).expect("Failed to convert uniform location to CString");
+        let cname = ::std::ffi::CString::new(location)
+            .expect("Failed to convert uniform location to CString");
         unsafe { gl::GetUniformLocation(self.renderer_id, cname.as_ptr()) }
-    } 
+    }
 
     pub fn uniform_4f(&self, location: impl Into<String>, val: (f32, f32, f32, f32)) {
-        let (v0,v1,v2,v3) = val;
+        let (v0, v1, v2, v3) = val;
         let location = self.uniform_location(location.into());
         unsafe { gl::Uniform4f(location, v0, v1, v2, v3) }
     }
 
     pub fn uniform_3f(&self, location: impl Into<String>, val: (f32, f32, f32)) {
-        let (v0,v1,v2) = val;
+        let (v0, v1, v2) = val;
         let location = self.uniform_location(location.into());
         unsafe { gl::Uniform3f(location, v0, v1, v2) }
     }
 
     pub fn uniform_2f(&self, location: impl Into<String>, val: (f32, f32)) {
-        let (v0,v1) = val;
+        let (v0, v1) = val;
         let location = self.uniform_location(location.into());
         unsafe { gl::Uniform2f(location, v0, v1) }
     }
@@ -123,20 +127,39 @@ impl Shader {
         unsafe { gl::Uniform1i(location, val) }
     }
 
+    pub fn uniform_mat4(&self, location: impl Into<String>, val: &TMat4<f32>) {
+        let location = self.uniform_location(location.into());
+        unsafe { gl::UniformMatrix4fv(location, 1, gl::FALSE, val.as_ptr()); }
+    }
+
     pub fn from_sources(fragment_src: impl Into<String>, vertex_src: impl Into<String>) -> Self {
         let fragment_id = {
             let shader_id = unsafe { gl::CreateShader(gl::FRAGMENT_SHADER) };
             let c_str_vert = CString::new(fragment_src.into()).unwrap();
             unsafe { gl::ShaderSource(shader_id, 1, &c_str_vert.as_ptr(), ptr::null()) };
             unsafe { gl::CompileShader(shader_id) };
-            
+
             let mut success = gl::FALSE as GLint;
             let mut info_log = Vec::with_capacity(512);
-            unsafe { info_log.set_len(512 - 1); }
-            unsafe { gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut success); };
+            unsafe {
+                info_log.set_len(512 - 1);
+            }
+            unsafe {
+                gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut success);
+            };
             if success != gl::TRUE as GLint {
-                unsafe { gl::GetShaderInfoLog(shader_id, 512, ptr::null_mut(), info_log.as_mut_ptr() as *mut GLchar) };
-                println!("[Shader Error] [Fragment] Compilation Failed\n{}", std::str::from_utf8(&info_log).unwrap());
+                unsafe {
+                    gl::GetShaderInfoLog(
+                        shader_id,
+                        512,
+                        ptr::null_mut(),
+                        info_log.as_mut_ptr() as *mut GLchar,
+                    )
+                };
+                println!(
+                    "[Shader Error] [Fragment] Compilation Failed\n{}",
+                    std::str::from_utf8(&info_log).unwrap()
+                );
             }
             shader_id
         };
@@ -146,14 +169,26 @@ impl Shader {
             let c_str_vert = CString::new(vertex_src.into()).unwrap();
             unsafe { gl::ShaderSource(shader_id, 1, &c_str_vert.as_ptr(), ptr::null()) };
             unsafe { gl::CompileShader(shader_id) };
-            
+
             let mut success = gl::FALSE as GLint;
             let mut info_log = Vec::with_capacity(512);
-            unsafe { info_log.set_len(512 - 1); }
+            unsafe {
+                info_log.set_len(512 - 1);
+            }
             unsafe { gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut success) };
             if success != gl::TRUE as GLint {
-                unsafe { gl::GetShaderInfoLog(shader_id, 512, ptr::null_mut(), info_log.as_mut_ptr() as *mut GLchar) };
-                println!("[Shader Error] [Vertex] Compilation Failed\n{}", std::str::from_utf8(&info_log).unwrap());
+                unsafe {
+                    gl::GetShaderInfoLog(
+                        shader_id,
+                        512,
+                        ptr::null_mut(),
+                        info_log.as_mut_ptr() as *mut GLchar,
+                    )
+                };
+                println!(
+                    "[Shader Error] [Vertex] Compilation Failed\n{}",
+                    std::str::from_utf8(&info_log).unwrap()
+                );
             }
             shader_id
         };
@@ -165,23 +200,33 @@ impl Shader {
                 gl::AttachShader(renderer_id, fragment_id);
                 gl::LinkProgram(renderer_id);
             }
-            
+
             let mut success = gl::FALSE as GLint;
             let mut info_log = Vec::with_capacity(512);
-            unsafe { info_log.set_len(512 - 1); }
+            unsafe {
+                info_log.set_len(512 - 1);
+            }
             unsafe { gl::GetProgramiv(renderer_id, gl::LINK_STATUS, &mut success) }
             if success != gl::TRUE as GLint {
-                unsafe { gl::GetProgramInfoLog(renderer_id, 512, ptr::null_mut(), info_log.as_mut_ptr() as *mut GLchar); }
-                println!("[Shader Error] [Program] Linker Failed\n{}", std::str::from_utf8(&info_log).unwrap());
+                unsafe {
+                    gl::GetProgramInfoLog(
+                        renderer_id,
+                        512,
+                        ptr::null_mut(),
+                        info_log.as_mut_ptr() as *mut GLchar,
+                    );
+                }
+                println!(
+                    "[Shader Error] [Program] Linker Failed\n{}",
+                    std::str::from_utf8(&info_log).unwrap()
+                );
             }
-            
+
             unsafe { gl::DeleteShader(vertex_id) };
             unsafe { gl::DeleteShader(fragment_id) };
             renderer_id
         };
 
-        Self {
-            renderer_id,
-        }
+        Self { renderer_id }
     }
 }

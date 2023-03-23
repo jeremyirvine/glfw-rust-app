@@ -1,14 +1,12 @@
 use std::ffi::c_void;
 
 use glcall_macro::gl_call;
-use stb_image::image::{LoadResult, Image};
-use stb_image::stb_image::bindgen::{stbi_set_flip_vertically_on_load};
-
-use crate::{gl_clear_errors, gl_log_errors};
+use stb_image::image::{Image, LoadResult};
+use stb_image::stb_image::bindgen::stbi_set_flip_vertically_on_load;
 
 enum TextureImage {
-   U8(Image<u8>),
-   F32(Image<f32>),
+    U8(Image<u8>),
+    F32(Image<f32>),
 }
 
 impl TextureImage {
@@ -26,7 +24,7 @@ impl TextureImage {
         }
     }
 
-    pub fn ptr(&self) -> *const c_void { 
+    pub fn ptr(&self) -> *const c_void {
         match self {
             TextureImage::F32(im) => im.data.as_ptr() as *const c_void,
             TextureImage::U8(im) => im.data.as_ptr() as *const c_void,
@@ -41,14 +39,16 @@ pub struct Texture {
 
 impl Drop for Texture {
     fn drop(&mut self) {
-        gl_call!({ gl::DeleteTextures(1, &self.renderer_id); });
+        gl_call!({
+            gl::DeleteTextures(1, &self.renderer_id);
+        });
     }
 }
 
 impl Texture {
     pub fn new(path: String) -> Self {
         let mut instance = {
-            unsafe { 
+            unsafe {
                 stbi_set_flip_vertically_on_load(1);
             }
             let image = stb_image::image::load(path);
@@ -75,10 +75,10 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
 
             gl::TexImage2D(
-                gl::TEXTURE_2D, 
-                0, 
-                gl::RGBA8 as i32, 
-                instance.image.width() as i32, 
+                gl::TEXTURE_2D,
+                0,
+                gl::RGBA8 as i32,
+                instance.image.width() as i32,
                 instance.image.height() as i32,
                 0,
                 gl::RGBA,
@@ -99,13 +99,15 @@ impl Texture {
     }
 
     pub fn bind(&self, slot: u32) {
-        gl_call!({ 
+        gl_call!({
             gl::ActiveTexture(gl::TEXTURE0 + slot);
             gl::BindTexture(gl::TEXTURE_2D, self.renderer_id);
         });
     }
 
     pub fn unbind(&self) {
-        unsafe { gl::BindTexture(gl::TEXTURE_2D, 0); }
+        unsafe {
+            gl::BindTexture(gl::TEXTURE_2D, 0);
+        }
     }
 }

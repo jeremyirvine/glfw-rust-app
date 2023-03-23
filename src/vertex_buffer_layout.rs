@@ -1,4 +1,4 @@
-use gl::types::{GLenum, GLuint, GLfloat, GLubyte};
+use gl::types::{GLenum, GLfloat, GLubyte, GLuint};
 
 pub fn size_of_type(gl_type: GLenum) -> u32 {
     match gl_type {
@@ -22,7 +22,7 @@ impl VertexBufferElement {
     pub fn gl_type(&self) -> GLenum {
         self.gl_type
     }
-    
+
     pub fn count(&self) -> u32 {
         self.count
     }

@@ -7,6 +7,8 @@ edition = "2021"
 gl = "0.14.0"
 glcall_macro = { path = "glcall_macro" }
 stb_image = "0.2.5"
+glm = "0.2.3"
+nalgebra-glm = "0.18.0"
 
 [dependencies.glfw]
 version = "*"

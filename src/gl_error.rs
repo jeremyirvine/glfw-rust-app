@@ -23,7 +23,7 @@ impl Display for GLGenericError {
             Self::OutOfMemory => "Out of Memory",
             Self::UnknownError => "Unknown Error",
         };
-        write!(f, "{}", err_msg)     
+        write!(f, "{}", err_msg)
     }
 }
 
