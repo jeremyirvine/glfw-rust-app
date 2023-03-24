@@ -40,7 +40,7 @@ impl Renderer {
         va.bind();
         ib.bind();
         gl_call!({
-            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, 0 as *const c_void);
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null::<c_void>());
         });
     }
 

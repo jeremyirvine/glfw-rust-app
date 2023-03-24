@@ -29,7 +29,6 @@ use imgui_glfw_rs::ImguiGLFW;
 
 use glfw_app::{gl_clear_errors, gl_log_errors};
 use imgui_glfw_rs::imgui::EditableColor;
-use imgui_glfw_rs::imgui::ImString;
 
 fn main() {
     let mut screen_width: u32 = 1280;
@@ -112,8 +111,6 @@ fn main() {
 
     let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(-100., 0., 0.));
 
-    let mut r = 0.0;
-    let mut inc = 0.05;
     while !window.should_close() {
         process_events(&mut window, &events, &mut screen_width, &mut screen_height);
         let ui = imgui_glfw.frame(&mut window, &mut imgui);
@@ -150,11 +147,6 @@ fn main() {
         shader.unbind();
 
         imgui_glfw.draw(ui, &mut window);
-
-        if r < 0.0 || r > 1.0 {
-            inc *= -1.;
-        }
-        r += inc;
 
         window.swap_buffers();
         glfw.poll_events();

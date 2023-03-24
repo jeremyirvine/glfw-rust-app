@@ -31,8 +31,14 @@ impl GLComponent for VertexArray {
 impl Drop for VertexArray {
     fn drop(&mut self) {
         gl_call!({
-            gl::DeleteVertexArrays(1, &mut self.renderer_id);
+            gl::DeleteVertexArrays(1, &self.renderer_id);
         });
+    }
+}
+
+impl Default for VertexArray {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

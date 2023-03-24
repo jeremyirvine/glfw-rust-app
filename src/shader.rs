@@ -37,14 +37,14 @@ impl ShaderBuilder {
                 let line = format!("{}\n", line);
                 let line = line.as_str();
                 match append_to_type {
-                    ShaderType::Vertex => vert_src.push_str(line.clone()),
+                    ShaderType::Vertex => vert_src.push_str(line),
                     ShaderType::Fragment => frag_src.push_str(line),
                     _ => {}
                 }
             }
         }
 
-        Ok(self.with_fragment(frag_src)?.with_vertex(vert_src)?)
+        self.with_fragment(frag_src)?.with_vertex(vert_src)
     }
 
     pub fn with_shader(self, path: String) -> Result<Self, ::std::io::Error> {
@@ -144,9 +144,6 @@ impl Shader {
             let mut success = gl::FALSE as GLint;
             let mut info_log = Vec::with_capacity(512);
             unsafe {
-                info_log.set_len(512 - 1);
-            }
-            unsafe {
                 gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut success);
             };
             if success != gl::TRUE as GLint {
@@ -174,9 +171,6 @@ impl Shader {
 
             let mut success = gl::FALSE as GLint;
             let mut info_log = Vec::with_capacity(512);
-            unsafe {
-                info_log.set_len(512 - 1);
-            }
             unsafe { gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut success) };
             if success != gl::TRUE as GLint {
                 unsafe {
@@ -205,9 +199,6 @@ impl Shader {
 
             let mut success = gl::FALSE as GLint;
             let mut info_log = Vec::with_capacity(512);
-            unsafe {
-                info_log.set_len(512 - 1);
-            }
             unsafe { gl::GetProgramiv(renderer_id, gl::LINK_STATUS, &mut success) }
             if success != gl::TRUE as GLint {
                 unsafe {

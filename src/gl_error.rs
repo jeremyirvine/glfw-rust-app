@@ -54,7 +54,7 @@ pub fn gl_log_errors(file: impl Display, line: impl Display, statement: String) 
 
         eprintln!("[OpenGL Error] ({}) {}", error, err_msg);
         eprintln!("\t│ Block starts @ {}:{}", file, line);
-        eprintln!("\t└ Fault        @ {}\n", statement.replace("\n", ""));
+        eprintln!("\t└ Fault        @ {}\n", statement.replace('\n', ""));
 
         error = unsafe { gl::GetError() };
         errored = true;

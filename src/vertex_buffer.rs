@@ -27,7 +27,7 @@ impl GLComponent for VertexBuffer {
 impl Drop for VertexBuffer {
     fn drop(&mut self) {
         gl_call!({
-            gl::DeleteBuffers(1, &mut self.renderer_id);
+            gl::DeleteBuffers(1, &self.renderer_id);
         });
     }
 }
