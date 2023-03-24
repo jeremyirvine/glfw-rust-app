@@ -5,6 +5,7 @@
 
 extern crate nalgebra_glm as glm;
 
+use std::ffi::CStr;
 use std::sync::mpsc::Receiver;
 
 use gl::types::GLuint;
@@ -20,7 +21,17 @@ use glfw_app::vertex_array::VertexArray;
 use glfw_app::vertex_buffer::VertexBuffer;
 use glfw_app::vertex_buffer_layout::VertexBufferLayout;
 
-use glfw_app::{gl_clear_errors, gl_log_errors};
+use glm::Vec3;
+use glm::Vec4;
+use imgui_glfw_rs::ImguiGLFW;
+use imgui_glfw_rs::imgui;
+use imgui_glfw_rs::glfw;
+use imgui::Context as ImContext;
+
+use glfw_app::{gl_log_errors, gl_clear_errors};
+use imgui_glfw_rs::imgui::EditableColor;
+use imgui_glfw_rs::imgui::ImString;
+use imgui_glfw_rs::imgui::sys::ImVec4;
 
 const SCREEN_WIDTH: u32 = 1280;
 const SCREEN_HEIGHT: u32 = 960;
@@ -43,13 +54,18 @@ fn main() {
         .expect("Failed to create GLFW window");
 
     window.make_current();
-    window.set_key_polling(true);
+    window.set_all_polling(true);
     window.set_framebuffer_size_polling(true);
 
     glfw.set_swap_interval(SwapInterval::Sync(1));
 
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
+    let mut imgui = ImContext::create();
+
+    let mut imgui_glfw = ImguiGLFW::new(&mut imgui, &mut window);
+
+    #[rustfmt::skip]
     let vertices: Vec<f32> = vec![
         100.0,  100.0, 0.0,   0.0, 0.0,
         200.0,  100.0, 0.0,   1.0, 0.0,
@@ -92,12 +108,12 @@ fn main() {
 
     {
         let proj = glm::ortho(
-             0.0, 
-             SCREEN_WIDTH as f32, 
-             0.0, 
-             SCREEN_HEIGHT as f32, 
-            -1.0, 
-             1.0
+            0.0,
+            SCREEN_WIDTH as f32,
+            0.0,
+            SCREEN_HEIGHT as f32,
+            -1.0,
+            1.0,
         );
         let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(-100., 0., 0.));
         let model = glm::translate(&glm::Mat4::identity(), &glm::vec3(200., 200., 0.));
@@ -105,12 +121,26 @@ fn main() {
         shader.uniform_mat4("u_MVP", &mvp);
     }
 
+    let mut clear_color = Vec4::new(0.45, 0.55, 0.60, 1.0);
+
     let mut r = 0.0;
     let mut inc = 0.05;
     while !window.should_close() {
         process_events(&mut window, &events);
+        let ui = imgui_glfw.frame(&mut window, &mut imgui);
+        ui.window(&ImString::from("Debug".to_string()))
+            .size([500.0, 10.0], imgui::Condition::FirstUseEver)
+            .build(|| {
+                ui.color_edit(
+                    &ImString::from("Clear Color".to_string()), 
+                    EditableColor::Float4(clear_color.as_mut_slice().try_into().unwrap()),
+                )
+                .build();
+            });
 
         renderer.clear();
+
+
 
         shader.bind();
         shader.uniform_4f("u_Color", (r, 0.3, 0.3, 1.0));
@@ -119,6 +149,8 @@ fn main() {
         renderer.draw(&vao, &ibo, &shader);
         shader.unbind();
 
+        imgui_glfw.draw(ui, &mut window);
+
         if r < 0.0 || r > 1.0 {
             inc *= -1.;
         }
@@ -126,6 +158,9 @@ fn main() {
 
         window.swap_buffers();
         glfw.poll_events();
+        for (_,event) in glfw::flush_messages(&events) {
+            imgui_glfw.handle_event(&mut imgui, &event);
+        }
     }
 }
 

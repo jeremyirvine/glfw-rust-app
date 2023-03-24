@@ -129,7 +129,9 @@ impl Shader {
 
     pub fn uniform_mat4(&self, location: impl Into<String>, val: &TMat4<f32>) {
         let location = self.uniform_location(location.into());
-        unsafe { gl::UniformMatrix4fv(location, 1, gl::FALSE, val.as_ptr()); }
+        unsafe {
+            gl::UniformMatrix4fv(location, 1, gl::FALSE, val.as_ptr());
+        }
     }
 
     pub fn from_sources(fragment_src: impl Into<String>, vertex_src: impl Into<String>) -> Self {

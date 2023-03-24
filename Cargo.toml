@@ -9,10 +9,11 @@ glcall_macro = { path = "glcall_macro" }
 stb_image = "0.2.5"
 glm = "0.2.3"
 nalgebra-glm = "0.18.0"
+imgui-glfw-rs = { path = "P:/Git/imgui-glfw-rs" }
 
-[dependencies.glfw]
-version = "*"
-default-features = false
+#[dependencies.glfw]
+#version = "0.51"
+#default-features = false
 
 [features]
 console = []
