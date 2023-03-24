@@ -5,7 +5,6 @@
 
 extern crate nalgebra_glm as glm;
 
-use std::ffi::CStr;
 use std::sync::mpsc::Receiver;
 
 use gl::types::GLuint;
@@ -16,27 +15,26 @@ use glfw_app::ShaderBuilder;
 use glfw_app::gl_component::GLComponent;
 use glfw_app::index_buffer::IndexBuffer;
 use glfw_app::renderer::Renderer;
+use glfw_app::str_to_imstr;
 use glfw_app::texture::Texture;
 use glfw_app::vertex_array::VertexArray;
 use glfw_app::vertex_buffer::VertexBuffer;
 use glfw_app::vertex_buffer_layout::VertexBufferLayout;
 
-use glm::Vec3;
 use glm::Vec4;
-use imgui_glfw_rs::ImguiGLFW;
-use imgui_glfw_rs::imgui;
-use imgui_glfw_rs::glfw;
 use imgui::Context as ImContext;
+use imgui_glfw_rs::glfw;
+use imgui_glfw_rs::imgui;
+use imgui_glfw_rs::ImguiGLFW;
 
-use glfw_app::{gl_log_errors, gl_clear_errors};
+use glfw_app::{gl_clear_errors, gl_log_errors};
 use imgui_glfw_rs::imgui::EditableColor;
 use imgui_glfw_rs::imgui::ImString;
-use imgui_glfw_rs::imgui::sys::ImVec4;
-
-const SCREEN_WIDTH: u32 = 1280;
-const SCREEN_HEIGHT: u32 = 960;
 
 fn main() {
+    let mut screen_width: u32 = 1280;
+    let mut screen_height: u32 = 960;
+
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
     glfw.window_hint(WindowHint::ContextVersion(3, 3));
     glfw.window_hint(WindowHint::OpenGlProfile(OpenGlProfileHint::Core));
@@ -46,8 +44,8 @@ fn main() {
 
     let (mut window, events) = glfw
         .create_window(
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT,
+            screen_width,
+            screen_height,
             "LearnOpenGL",
             WindowMode::Windowed,
         )
@@ -73,7 +71,11 @@ fn main() {
         100.0,  200.0, 0.0,   0.0, 1.0,
     ];
 
-    let indices: Vec<GLuint> = vec![0, 1, 2, 2, 3, 0];
+    #[rustfmt::skip]
+    let indices: Vec<GLuint> = vec![
+        0, 1, 2,
+        2, 3, 0
+    ];
 
     gl_call!({
         gl::Enable(gl::BLEND);
@@ -97,53 +99,51 @@ fn main() {
     ibo.unbind();
     vao.unbind();
 
-    shader.bind();
-    shader.uniform_4f("u_Color", (1.0, 0.5, 0.0, 1.0));
+    let mut clear_color = Vec4::new(0.45, 0.55, 0.60, 1.0);
+    let mut translate = glm::vec3(200., 200., 0.);
 
-    let renderer = Renderer::new((0.3, 0.4, 0.8, 1.0));
+    let mut renderer = Renderer::from(clear_color);
 
     let texture = Texture::new("src/res/textures/phone.png".into());
     texture.bind(0);
+    shader.bind();
     shader.uniform_1i("u_Texture", 0);
+    shader.unbind();
 
-    {
-        let proj = glm::ortho(
-            0.0,
-            SCREEN_WIDTH as f32,
-            0.0,
-            SCREEN_HEIGHT as f32,
-            -1.0,
-            1.0,
-        );
-        let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(-100., 0., 0.));
-        let model = glm::translate(&glm::Mat4::identity(), &glm::vec3(200., 200., 0.));
-        let mvp = proj * view * model;
-        shader.uniform_mat4("u_MVP", &mvp);
-    }
-
-    let mut clear_color = Vec4::new(0.45, 0.55, 0.60, 1.0);
+    let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(-100., 0., 0.));
 
     let mut r = 0.0;
     let mut inc = 0.05;
     while !window.should_close() {
-        process_events(&mut window, &events);
+        process_events(&mut window, &events, &mut screen_width, &mut screen_height);
         let ui = imgui_glfw.frame(&mut window, &mut imgui);
-        ui.window(&ImString::from("Debug".to_string()))
+        ui.window(&str_to_imstr("Debug Options"))
             .size([500.0, 10.0], imgui::Condition::FirstUseEver)
             .build(|| {
                 ui.color_edit(
-                    &ImString::from("Clear Color".to_string()), 
+                    &str_to_imstr("Clear Color"),
                     EditableColor::Float4(clear_color.as_mut_slice().try_into().unwrap()),
                 )
                 .build();
-            });
 
+                ui.slider_float3(&str_to_imstr("Model Translation"), translate.as_mut_slice().try_into().unwrap(), 0.0, 960.0).build();
+            });
+        renderer.set_clear_color_from_vec4(&clear_color);
         renderer.clear();
 
-
+        let proj = glm::ortho(
+            0.0,
+            screen_width as f32,
+            0.0,
+            screen_height as f32,
+            -1.0,
+            1.0,
+        );
+        let model = glm::translate(&glm::Mat4::identity(), &translate);
+        let mvp = proj * view * model;
 
         shader.bind();
-        shader.uniform_4f("u_Color", (r, 0.3, 0.3, 1.0));
+        shader.uniform_mat4("u_MVP", &mvp);
         vao.bind();
         ibo.bind();
         renderer.draw(&vao, &ibo, &shader);
@@ -158,16 +158,23 @@ fn main() {
 
         window.swap_buffers();
         glfw.poll_events();
-        for (_,event) in glfw::flush_messages(&events) {
+        for (_, event) in glfw::flush_messages(&events) {
             imgui_glfw.handle_event(&mut imgui, &event);
         }
     }
 }
 
-fn process_events(window: &mut glfw::Window, events: &Receiver<(f64, glfw::WindowEvent)>) {
+fn process_events(
+    window: &mut glfw::Window,
+    events: &Receiver<(f64, glfw::WindowEvent)>,
+    screen_width: &mut u32,
+    screen_height: &mut u32,
+) {
     for (_, event) in glfw::flush_messages(events) {
         match event {
             glfw::WindowEvent::FramebufferSize(width, height) => unsafe {
+                *screen_width = width as u32;
+                *screen_height = height as u32;
                 gl::Viewport(0, 0, width, height);
             },
             glfw::WindowEvent::Key(Key::Escape, _, Action::Release, _) => {

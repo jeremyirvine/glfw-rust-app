@@ -18,7 +18,6 @@ void main() {
 
 in vec2 v_TextureCoord;
 
-uniform vec4 u_Color;
 uniform sampler2D u_Texture;
 
 out vec4 Color;
