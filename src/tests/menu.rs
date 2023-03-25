@@ -21,8 +21,6 @@ impl TestMenu {
     pub fn render(&self) {
         if let Some(current_test) = self.current_test {
             self.tests[current_test].render();
-        } else {
-            
         }
     }
 
@@ -45,9 +43,7 @@ impl TestMenu {
     pub fn update(&mut self, delta_time: f32) {
         if let Some(current_test) = self.current_test {
             self.tests[current_test].update(delta_time);
-        } else {
-
-        }
+        }    
     }
 
     pub fn imgui_title(&self) -> String {
