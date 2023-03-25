@@ -11,9 +11,5 @@ glm = "0.2.3"
 nalgebra-glm = "0.18.0"
 imgui-glfw-rs = { path = "P:/Git/imgui-glfw-rs" }
 
-#[dependencies.glfw]
-#version = "0.51"
-#default-features = false
-
 [features]
 console = []

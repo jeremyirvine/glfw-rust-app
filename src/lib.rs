@@ -1,3 +1,5 @@
+pub mod tests;
+
 pub mod gl_error;
 pub use gl_error::{gl_clear_errors, gl_log_errors};
 
@@ -13,7 +15,6 @@ pub mod texture;
 
 pub mod shader;
 pub use shader::ShaderBuilder;
-
 
 use imgui_glfw_rs::imgui::ImString;
 pub fn str_to_imstr(s: impl Into<String>) -> ImString {

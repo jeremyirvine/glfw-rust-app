@@ -40,12 +40,17 @@ impl Renderer {
         va.bind();
         ib.bind();
         gl_call!({
-            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null::<c_void>());
+            gl::DrawElements(
+                gl::TRIANGLES,
+                6,
+                gl::UNSIGNED_INT,
+                std::ptr::null::<c_void>(),
+            );
         });
     }
 
     pub fn set_clear_color(&mut self, r: f32, g: f32, b: f32, a: f32) {
-        self.clear_color = (r,g,b,a);
+        self.clear_color = (r, g, b, a);
     }
 
     pub fn set_clear_color_from_vec4(&mut self, vector: &Vec4) {
