@@ -14,3 +14,4 @@ pub trait Testable {
 pub mod menu;
 pub mod test_clear_color;
 pub mod test_texture;
+pub mod test_batch_rendering;

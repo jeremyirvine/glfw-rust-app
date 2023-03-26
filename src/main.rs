@@ -14,6 +14,7 @@ use glfw_app::renderer::Renderer;
 use glfw_app::str_to_imstr;
 
 use glfw_app::tests::menu::TestMenu;
+use glfw_app::tests::test_batch_rendering::TestBatchRendering;
 use glfw_app::tests::test_clear_color::TestClearColor;
 use glfw_app::tests::test_texture::TestTexture;
 use imgui::Context as ImContext;
@@ -63,6 +64,7 @@ fn main() {
     let mut test_menu = TestMenu::default();
     test_menu.register_test(TestClearColor::default());
     test_menu.register_test(TestTexture::default());
+    test_menu.register_test(TestBatchRendering::default());
 
     let renderer = Renderer::new((0.0, 0.0, 0.0, 1.0));
 

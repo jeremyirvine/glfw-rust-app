@@ -57,7 +57,7 @@ impl Default for TestTexture {
         shader.uniform_1i("u_Texture", 0);
         shader.unbind(); 
 
-        let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(-100., 0., 0.));
+        let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(0., 0., 0.));
         let model = glm::vec3(100., 100., 0.);
 
         Self { vao, ibo, shader, view, model, texture }
@@ -88,7 +88,6 @@ impl Testable for TestTexture {
         self.shader.uniform_mat4("u_MVP", &mvp);
 
         self.vao.bind();
-        self.ibo.bind();
 
         renderer.draw(&self.vao, &self.ibo, &self.shader);
         self.shader.unbind();

@@ -29,14 +29,14 @@ impl TestMenu {
 
     pub fn imgui_render(&mut self, screen_size: (f32,f32), ui: &Ui) {
         if let Some(current_test) = self.current_test {
-            if ui.button(&str_to_imstr("<-- Back"), [100., 20.]) {
+            if ui.button(&str_to_imstr("<-- Back"), [150., 20.]) {
                 self.current_test = None;
             } else {
                 self.tests[current_test].imgui_render(screen_size, ui);
             }
         } else {
             for (i, test) in (self.tests).iter().enumerate() {
-                if ui.button(&str_to_imstr(test.test_name()), [100., 20.]) {
+                if ui.button(&str_to_imstr(test.test_name()), [150., 20.]) {
                     self.current_test = Some(i);
                 }
             }
