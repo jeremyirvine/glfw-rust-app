@@ -46,12 +46,12 @@ impl Drop for Texture {
 }
 
 impl Texture {
-    pub fn new(path: String) -> Self {
+    pub fn new(path: impl Into<String>) -> Self {
         let mut instance = {
             unsafe {
                 stbi_set_flip_vertically_on_load(1);
             }
-            let image = stb_image::image::load(path);
+            let image = stb_image::image::load(path.into());
 
             let image = match image {
                 LoadResult::ImageU8(image) => TextureImage::U8(image),

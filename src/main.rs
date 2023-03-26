@@ -8,16 +8,17 @@ extern crate nalgebra_glm as glm;
 use std::sync::mpsc::Receiver;
 
 use glcall_macro::gl_call;
-use glfw::{Action, Context, Key, OpenGlProfileHint, SwapInterval, WindowHint, WindowMode};
+use glfw::{Action, Key, OpenGlProfileHint, SwapInterval, WindowHint, WindowMode};
 
 use glfw_app::renderer::Renderer;
 use glfw_app::str_to_imstr;
 
-use glfw_app::tests::Testable;
 use glfw_app::tests::menu::TestMenu;
 use glfw_app::tests::test_clear_color::TestClearColor;
+use glfw_app::tests::test_texture::TestTexture;
 use imgui::Context as ImContext;
 use imgui_glfw_rs::glfw;
+use imgui_glfw_rs::glfw::Context;
 use imgui_glfw_rs::imgui;
 use imgui_glfw_rs::ImguiGLFW;
 
@@ -59,30 +60,30 @@ fn main() {
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
     });
 
-    let renderer = Renderer::new((0.0, 0.0, 0.0, 1.0));
     let mut test_menu = TestMenu::default();
-    test_menu.register_test(Box::new(TestClearColor::default()));
+    test_menu.register_test(TestClearColor::default());
+    test_menu.register_test(TestTexture::default());
+
+    let renderer = Renderer::new((0.0, 0.0, 0.0, 1.0));
+
 
     while !window.should_close() {
         renderer.clear();
-        process_events(&mut window, &events, &mut screen_width, &mut screen_height);
 
         let ui = imgui_glfw.frame(&mut window, &mut imgui);
         ui.window(&str_to_imstr(&test_menu.imgui_title()))
             .size([500.0, 100.0], imgui::Condition::FirstUseEver)
             .build(|| {
-                test_menu.imgui_render(&ui);
+                test_menu.imgui_render((screen_width as f32, screen_height as f32), &ui);
             });
 
         test_menu.update(0.0);
-        test_menu.render();
+        test_menu.render((screen_width as f32, screen_height as f32), &renderer);
         imgui_glfw.draw(ui, &mut window);
 
         window.swap_buffers();
         glfw.poll_events();
-        for (_, event) in glfw::flush_messages(&events) {
-            imgui_glfw.handle_event(&mut imgui, &event);
-        }
+        process_events(&mut window, &events, &mut screen_width, &mut screen_height, &mut imgui, &mut imgui_glfw);
     }
 }
 
@@ -91,8 +92,11 @@ fn process_events(
     events: &Receiver<(f64, glfw::WindowEvent)>,
     screen_width: &mut u32,
     screen_height: &mut u32,
+    imgui: &mut ImContext,
+    imgui_glfw: &mut ImguiGLFW,
 ) {
     for (_, event) in glfw::flush_messages(events) {
+        imgui_glfw.handle_event(imgui, &event);
         match event {
             glfw::WindowEvent::FramebufferSize(width, height) => unsafe {
                 *screen_width = width as u32;

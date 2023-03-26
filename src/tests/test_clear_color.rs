@@ -1,7 +1,7 @@
 use glcall_macro::gl_call;
 use imgui_glfw_rs::imgui::Ui;
 
-use crate::str_to_imstr;
+use crate::{str_to_imstr, renderer::Renderer};
 
 use super::Testable;
 
@@ -10,22 +10,24 @@ pub struct TestClearColor {
 }
 
 impl Testable for TestClearColor {
-    fn render(&self) {
-        let (red,green,blue,alpha) = (self.color[0],self.color[1],self.color[2],self.color[2]);
-        gl_call!({ 
+    fn render(&self, _: (f32, f32), renderer: &Renderer) {
+        let (red, green, blue, alpha) =
+            (self.color[0], self.color[1], self.color[2], self.color[2]);
+        gl_call!({
             gl::ClearColor(red, green, blue, alpha);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         });
     }
 
-    fn imgui_render(&mut self, ui: &Ui) {
-        ui.color_picker(&str_to_imstr("Clear Color"), &mut self.color).build();
+    fn imgui_render(&mut self, screen_size: (f32,f32), ui: &Ui) {
+        ui.color_picker(&str_to_imstr("Clear Color"), &mut self.color)
+            .build();
     }
 
     fn update(&mut self, _delta_time: f32) {}
 
     fn test_id(&self) -> &str {
-        "_289u35yrg345"
+        "clear_color_test"
     }
 
     fn test_name(&self) -> &str {
@@ -40,4 +42,3 @@ impl Default for TestClearColor {
         }
     }
 }
-
