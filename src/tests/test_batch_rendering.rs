@@ -6,15 +6,15 @@ use nalgebra_glm as glm;
 
 use crate::{tests::Testable, shader::Shader, ShaderBuilder, vertex_array::VertexArray, vertex_buffer_layout::VertexBufferLayout, vertex_buffer::VertexBuffer, index_buffer::IndexBuffer, gl_component::GLComponent, texture::Texture, str_to_imstr};
 
-fn gen_square(size: f32, x: f32, y: f32) -> Vec<f32> {
+fn gen_square(size: f32, x: f32, y: f32, color: Vec<f32>) -> Vec<f32> {
     let half = size / 2.;
 
     #[rustfmt::skip]
     let vertices = vec![
-        (-half) + x,    half + y, 0.0,
-           half + x,    half + y, 0.0,
-           half + x, (-half) + y, 0.0,
-        (-half) + x, (-half) + y, 0.0,
+        (-half) + x,    half + y, 0.0,     color[0], color[1], color[2],
+           half + x,    half + y, 0.0,     color[0], color[1], color[2],
+           half + x, (-half) + y, 0.0,     color[0], color[1], color[2],
+        (-half) + x, (-half) + y, 0.0,     color[0], color[1], color[2],
     ];
 
     vertices
@@ -31,8 +31,11 @@ pub struct TestBatchRendering {
 
 impl Default for TestBatchRendering {
     fn default() -> Self {
-        let mut vertices: Vec<f32> = gen_square(100., 0., 0.0);
-        vertices.extend(gen_square(100., 200., 0.));
+        let square_1 = gen_square(100., 0., 0.0,   vec![0.18, 0.6, 0.96]);
+        let square_2 = gen_square(100., 200., 0.0, vec![1.0, 0.96, 0.24]);
+
+        let mut vertices: Vec<f32> = square_1;
+        vertices.extend(square_2);
 
 
         #[rustfmt::skip]
@@ -65,14 +68,27 @@ impl Default for TestBatchRendering {
                 &vertices[0] as *const f32 as *const c_void, 
                 gl::STATIC_DRAW,
             );
+            
+            // Vertices
             gl::EnableVertexAttribArray(0);
             gl::VertexAttribPointer(
                 0, 
                 3, 
                 gl::FLOAT, 
                 gl::FALSE, 
-                (3 * std::mem::size_of::<f32>()) as i32, 
+                (6 * std::mem::size_of::<f32>()) as i32, 
                 std::ptr::null(),
+            );
+
+            // Color
+            gl::EnableVertexAttribArray(1);
+            gl::VertexAttribPointer(
+                1, 
+                3, 
+                gl::FLOAT, 
+                gl::FALSE, 
+                (6 * std::mem::size_of::<f32>()) as i32, 
+                12 as *const c_void,
             );
         });
 
