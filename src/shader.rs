@@ -157,7 +157,7 @@ impl Shader {
         });
     }
 
-    pub fn uniform_vec_int(&self, location: impl Into<String>, val: &Vec<i32>) {
+    pub fn uniform_vec_int(&self, location: impl Into<String>, val: &Vec<GLint>) {
         let location = self.uniform_location(location.into());
         gl_call!({
             gl::Uniform1iv(location, 1, val.as_ptr());

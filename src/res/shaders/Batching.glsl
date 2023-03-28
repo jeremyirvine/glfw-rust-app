@@ -1,5 +1,5 @@
 #shader vertex
-#version 330 core
+#version 450 core
 
 layout(location = 0) in vec4 position;
 layout(location = 1) in vec4 color;
@@ -20,7 +20,7 @@ void main() {
 }
 
 #shader fragment
-#version 330 core
+#version 450 core
 
 in vec4 fsh_Color;
 in vec2 fsh_TextureCoord;
@@ -28,9 +28,15 @@ in float fsh_TextureIndex;
 
 out vec4 Color;
 
-uniform sampler2D u_Textures[2];
+uniform sampler2D u_Texture0;
+uniform sampler2D u_Texture1;
 
 void main() {
     int index = int(fsh_TextureIndex);
-    Color = texture(u_Textures[index], fsh_TextureCoord);
+
+    if (fsh_TextureIndex == 0.0f) {
+        Color = texture(u_Texture0, fsh_TextureCoord);
+    } else {
+        Color = texture(u_Texture1, fsh_TextureCoord);
+    }
 }

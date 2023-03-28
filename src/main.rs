@@ -27,7 +27,7 @@ fn main() {
     let mut screen_height: u32 = 960;
 
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
-    glfw.window_hint(WindowHint::ContextVersion(3, 3));
+    glfw.window_hint(WindowHint::ContextVersion(4, 5));
     glfw.window_hint(WindowHint::OpenGlProfile(OpenGlProfileHint::Core));
 
     #[cfg(target_os = "macos")]

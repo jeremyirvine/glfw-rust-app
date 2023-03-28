@@ -51,7 +51,7 @@ impl Default for TestTexture {
         vbo.unbind();
         ibo.unbind();
 
-        let texture = Texture::new("src/res/textures/phone.png");
+        let texture = Texture::new("src/res/textures/phone.png", 0);
         texture.bind(0);
         shader.bind();
         shader.uniform_1i("u_Texture", 0);

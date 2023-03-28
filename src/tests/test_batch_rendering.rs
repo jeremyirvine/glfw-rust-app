@@ -26,16 +26,16 @@ impl Default for TestBatchRendering {
         #[rustfmt::skip]
         let vertices: Vec<f32> = vec![
             // Quad 1
-            -50.,  50., 0.0,        0.18, 0.6, 0.96, 1.0,    0.0, 0.0,    0.0,
-             50.,  50., 0.0,        0.18, 0.6, 0.96, 1.0,    1.0, 0.0,    0.0,
-             50., -50., 0.0,        0.18, 0.6, 0.96, 1.0,    1.0, 1.0,    0.0,
-            -50., -50., 0.0,        0.18, 0.6, 0.96, 1.0,    0.0, 1.0,    0.0,
+            -50.,  50., 0.0,        0.18, 0.6, 0.96, 1.0,    0.0, 1.0,    0.0,
+             50.,  50., 0.0,        0.18, 0.6, 0.96, 1.0,    1.0, 1.0,    0.0,
+             50., -50., 0.0,        0.18, 0.6, 0.96, 1.0,    1.0, 0.0,    0.0,
+            -50., -50., 0.0,        0.18, 0.6, 0.96, 1.0,    0.0, 0.0,    0.0,
                     
             // Quad 2
-             100.,  50., 0.0,       1.0, 0.96, 0.24, 1.0,    0.0, 0.0,    1.0,
-             200.,  50., 0.0,       1.0, 0.96, 0.24, 1.0,    1.0, 0.0,    1.0,
-             200., -50., 0.0,       1.0, 0.96, 0.24, 1.0,    1.0, 1.0,    1.0,
-             100., -50., 0.0,       1.0, 0.96, 0.24, 1.0,    0.0, 1.0,    1.0,
+             100.,  50., 0.0,       1.0, 0.96, 0.24, 1.0,    0.0, 1.0,    1.0,
+             200.,  50., 0.0,       1.0, 0.96, 0.24, 1.0,    1.0, 1.0,    1.0,
+             200., -50., 0.0,       1.0, 0.96, 0.24, 1.0,    1.0, 0.0,    1.0,
+             100., -50., 0.0,       1.0, 0.96, 0.24, 1.0,    0.0, 0.0,    1.0,
         ];
 
         #[rustfmt::skip]
@@ -129,8 +129,14 @@ impl Default for TestBatchRendering {
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
         });
 
-        let phone_texture = Texture::new("src/res/textures/phone.png");
-        let rust_texture = Texture::new("src/res/textures/rust.png");
+        let phone_texture = Texture::new("src/res/textures/phone.png", 0);
+        let rust_texture = Texture::new("src/res/textures/rust.png", 1);
+
+        shader.bind();
+        //shader.uniform_vec_int("u_Textures", &vec![0, 1]);
+        shader.uniform_1i("u_Texture0", 0);
+        shader.uniform_1i("u_Texture1", 1);
+        shader.unbind();
 
         Self {
             shader,
@@ -146,7 +152,7 @@ impl Testable for TestBatchRendering {
     fn render(&self, (width, height): (f32, f32), _renderer: &crate::renderer::Renderer) {
         gl_call!({
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         });
         let proj = glm::ortho(0.0, width, 0.0, height, -1.0, 1.0);
         let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(0.0, 0.0, 0.0));
@@ -155,14 +161,14 @@ impl Testable for TestBatchRendering {
         let mvp = proj * view * model;
 
         self.shader.bind();
-        dbg!(self.phone_texture.renderer_id());
-        dbg!(self.rust_texture.renderer_id());
-        self.shader.uniform_vec_int("u_Textures", &vec![0, 1]);
         self.shader.uniform_mat4("u_MVP", &mvp);
+        self.phone_texture.bind(0);
+        self.rust_texture.bind(1);
 
         gl_call!({
             gl::BindTextureUnit(0, self.phone_texture.renderer_id());
             gl::BindTextureUnit(1, self.rust_texture.renderer_id());
+
             gl::BindVertexArray(self.vao);
             gl::DrawElements(gl::TRIANGLES, 12, gl::UNSIGNED_INT, std::ptr::null());
         });

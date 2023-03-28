@@ -46,7 +46,7 @@ impl Drop for Texture {
 }
 
 impl Texture {
-    pub fn new(path: impl Into<String>) -> Self {
+    pub fn new(path: impl Into<String>, index: u32) -> Self {
         let mut instance = {
             unsafe {
                 stbi_set_flip_vertically_on_load(1);
@@ -67,6 +67,7 @@ impl Texture {
 
         gl_call!({
             gl::GenTextures(1, &mut instance.renderer_id);
+            gl::ActiveTexture(gl::TEXTURE0 + index);
             gl::BindTexture(gl::TEXTURE_2D, instance.renderer_id);
 
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
@@ -74,16 +75,14 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
 
-            dbg!(instance.renderer_id);
-
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0,
-                gl::RGB8 as i32,
+                gl::RGBA8 as i32,
                 instance.image.width() as i32,
                 instance.image.height() as i32,
                 0,
-                gl::RGB,
+                gl::RGBA,
                 gl::UNSIGNED_BYTE,
                 instance.image.ptr(),
             );
