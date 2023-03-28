@@ -1,19 +1,20 @@
 use crate::{
-    gl_component::GLComponent, index_buffer::IndexBuffer, vertex_array::VertexArray,
-    vertex_buffer::VertexBuffer, vertex_buffer_layout::VertexBufferLayout, ShaderBuilder, shader::Shader, texture::Texture, str_to_imstr, renderer::Renderer,
+    gl_component::GLComponent, index_buffer::IndexBuffer, renderer::Renderer, shader::Shader,
+    str_to_imstr, texture::Texture, vertex_array::VertexArray, vertex_buffer::VertexBuffer,
+    vertex_buffer_layout::VertexBufferLayout, ShaderBuilder,
 };
 use gl::types::GLuint;
 use glcall_macro::gl_call;
 use nalgebra_glm as glm;
 
-use super::Testable;
+use super::{Testable, TestableID};
 
 pub struct TestTexture {
     vao: VertexArray,
     ibo: IndexBuffer,
     shader: Shader,
     texture: Texture,
-    view:  glm::Mat4,
+    view: glm::Mat4,
     model: glm::Vec3,
 }
 
@@ -32,7 +33,6 @@ impl Default for TestTexture {
             0,1,2,
             2,3,0
         ];
-
 
         let shader = ShaderBuilder::default()
             .with_shader_source(include_str!("../res/shaders/Default.glsl").into())
@@ -55,26 +55,26 @@ impl Default for TestTexture {
         texture.bind(0);
         shader.bind();
         shader.uniform_1i("u_Texture", 0);
-        shader.unbind(); 
+        shader.unbind();
 
         let view = glm::translate(&glm::Mat4::identity(), &glm::vec3(0., 0., 0.));
         let model = glm::vec3(100., 100., 0.);
 
-        Self { vao, ibo, shader, view, model, texture }
+        Self {
+            vao,
+            ibo,
+            shader,
+            view,
+            model,
+            texture,
+        }
     }
 }
 
 impl Testable for TestTexture {
     fn render(&self, screen_size: (f32, f32), renderer: &Renderer) {
         let (width, height) = screen_size;
-        let proj = glm::ortho(
-            0.0,
-            width,
-            0.0,
-            height,
-            -1.0,
-            1.0,
-        );
+        let proj = glm::ortho(0.0, width, 0.0, height, -1.0, 1.0);
         let model = glm::translate(&glm::Mat4::identity(), &self.model);
         let mvp = proj * self.view * model;
 
@@ -94,16 +94,24 @@ impl Testable for TestTexture {
     }
 
     fn imgui_render(&mut self, (width, height): (f32, f32), ui: &imgui_glfw_rs::imgui::Ui) {
-        ui.slider_float3(&str_to_imstr("Model Translation"), self.model.as_mut(), 0.0, width.max(height)).build();
+        ui.slider_float3(
+            &str_to_imstr("Model Translation"),
+            self.model.as_mut(),
+            0.0,
+            width.max(height),
+        )
+        .build();
     }
 
-    fn update(&mut self, delta_time: f32) {}
+    fn update(&mut self, _delta_time: f32) {}
+}
 
-    fn test_id(&self) -> &str {
-        "test_texture"
+impl TestableID for TestTexture {
+    fn test_id() -> String {
+        "test_texture".into()
     }
 
-    fn test_name(&self) -> &str {
-        "Texture"
+    fn test_name() -> String {
+        "Texture".into()
     }
 }

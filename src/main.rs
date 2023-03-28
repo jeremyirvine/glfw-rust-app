@@ -14,9 +14,6 @@ use glfw_app::renderer::Renderer;
 use glfw_app::str_to_imstr;
 
 use glfw_app::tests::menu::TestMenu;
-use glfw_app::tests::test_batch_rendering::TestBatchRendering;
-use glfw_app::tests::test_clear_color::TestClearColor;
-use glfw_app::tests::test_texture::TestTexture;
 use imgui::Context as ImContext;
 use imgui_glfw_rs::glfw;
 use imgui_glfw_rs::glfw::Context;
@@ -62,12 +59,8 @@ fn main() {
     });
 
     let mut test_menu = TestMenu::default();
-    test_menu.register_test(TestClearColor::default());
-    test_menu.register_test(TestTexture::default());
-    test_menu.register_test(TestBatchRendering::default());
 
     let renderer = Renderer::new((0.0, 0.0, 0.0, 1.0));
-
 
     while !window.should_close() {
         renderer.clear();
@@ -85,7 +78,14 @@ fn main() {
 
         window.swap_buffers();
         glfw.poll_events();
-        process_events(&mut window, &events, &mut screen_width, &mut screen_height, &mut imgui, &mut imgui_glfw);
+        process_events(
+            &mut window,
+            &events,
+            &mut screen_width,
+            &mut screen_height,
+            &mut imgui,
+            &mut imgui_glfw,
+        );
     }
 }
 

@@ -75,6 +75,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "enum-iterator"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "706d9e7cf1c7664859d79cd524e4e53ea2b67ea03c98cc2870c5e539695d597e"
+dependencies = [
+ "enum-iterator-derive",
+]
+
+[[package]]
+name = "enum-iterator-derive"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "355f93763ef7b0ae1c43c4d8eccc9d5848d84ad1a1d8ce61c421d1ac85a19d05"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "env_logger"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -126,7 +146,7 @@ name = "glcall_macro"
 version = "0.1.0"
 dependencies = [
  "quote",
- "syn",
+ "syn 2.0.4",
 ]
 
 [[package]]
@@ -145,6 +165,7 @@ dependencies = [
 name = "glfw-app"
 version = "0.1.0"
 dependencies = [
+ "enum-iterator",
  "gl",
  "glcall_macro",
  "glm",
@@ -720,6 +741,17 @@ checksum = "e865fe63d814d367599a0198cb95049f7e81ea4fd5c6b302c825278a2b43c064"
 dependencies = [
  "cc",
  "libc",
+]
+
+[[package]]
+name = "syn"
+version = "1.0.109"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
 ]
 
 [[package]]

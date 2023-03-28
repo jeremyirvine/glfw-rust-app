@@ -1,6 +1,7 @@
 #![allow(dead_code, unused)]
 
 use gl::types::{GLchar, GLint};
+use glcall_macro::gl_call;
 use glm::Matrix4;
 use nalgebra_glm::TMat4;
 use std::{ffi::CString, ptr};
@@ -74,6 +75,7 @@ impl ShaderBuilder {
     }
 }
 
+#[derive(Clone)]
 pub struct Shader {
     renderer_id: u32,
 }
@@ -93,45 +95,73 @@ impl GLComponent for Shader {
 }
 
 impl Shader {
-    fn uniform_location(&self, location: String) -> GLint {
-        let cname = ::std::ffi::CString::new(location)
+    pub fn uniform_location(&self, location: impl Into<String>) -> GLint {
+        let cname = ::std::ffi::CString::new(location.into())
             .expect("Failed to convert uniform location to CString");
-        unsafe { gl::GetUniformLocation(self.renderer_id, cname.as_ptr()) }
+        let mut loc: GLint = 0;
+        gl_call!({
+            loc = gl::GetUniformLocation(self.renderer_id, cname.as_ptr());
+        });
+        loc
     }
 
     pub fn uniform_4f(&self, location: impl Into<String>, val: (f32, f32, f32, f32)) {
         let (v0, v1, v2, v3) = val;
         let location = self.uniform_location(location.into());
-        unsafe { gl::Uniform4f(location, v0, v1, v2, v3) }
+        gl_call!({
+            gl::Uniform4f(location, v0, v1, v2, v3);
+        });
     }
 
     pub fn uniform_3f(&self, location: impl Into<String>, val: (f32, f32, f32)) {
         let (v0, v1, v2) = val;
         let location = self.uniform_location(location.into());
-        unsafe { gl::Uniform3f(location, v0, v1, v2) }
+        gl_call!({
+            gl::Uniform3f(location, v0, v1, v2);
+        });
     }
 
     pub fn uniform_2f(&self, location: impl Into<String>, val: (f32, f32)) {
         let (v0, v1) = val;
         let location = self.uniform_location(location.into());
-        unsafe { gl::Uniform2f(location, v0, v1) }
+        gl_call!({
+            gl::Uniform2f(location, v0, v1);
+        });
     }
 
     pub fn uniform_1f(&self, location: impl Into<String>, val: f32) {
         let location = self.uniform_location(location.into());
-        unsafe { gl::Uniform1f(location, val) }
+        gl_call!({
+            gl::Uniform1f(location, val);
+        });
     }
 
     pub fn uniform_1i(&self, location: impl Into<String>, val: i32) {
         let location = self.uniform_location(location.into());
-        unsafe { gl::Uniform1i(location, val) }
+        gl_call!({
+            gl::Uniform1i(location, val);
+        });
     }
 
     pub fn uniform_mat4(&self, location: impl Into<String>, val: &TMat4<f32>) {
         let location = self.uniform_location(location.into());
-        unsafe {
+        gl_call!({
             gl::UniformMatrix4fv(location, 1, gl::FALSE, val.as_ptr());
-        }
+        });
+    }
+
+    pub fn uniform_vec_float(&self, location: impl Into<String>, val: &Vec<f32>) {
+        let location = self.uniform_location(location.into());
+        gl_call!({
+            gl::Uniform1fv(location, 1, val.as_ptr());
+        });
+    }
+
+    pub fn uniform_vec_int(&self, location: impl Into<String>, val: &Vec<i32>) {
+        let location = self.uniform_location(location.into());
+        gl_call!({
+            gl::Uniform1iv(location, 1, val.as_ptr());
+        });
     }
 
     pub fn from_sources(fragment_src: impl Into<String>, vertex_src: impl Into<String>) -> Self {

@@ -4,7 +4,7 @@ use glcall_macro::gl_call;
 use stb_image::image::{Image, LoadResult};
 use stb_image::stb_image::bindgen::stbi_set_flip_vertically_on_load;
 
-enum TextureImage {
+pub enum TextureImage {
     U8(Image<u8>),
     F32(Image<f32>),
 }
@@ -74,14 +74,16 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
 
+            dbg!(instance.renderer_id);
+
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0,
-                gl::RGBA8 as i32,
+                gl::RGB8 as i32,
                 instance.image.width() as i32,
                 instance.image.height() as i32,
                 0,
-                gl::RGBA,
+                gl::RGB,
                 gl::UNSIGNED_BYTE,
                 instance.image.ptr(),
             );
@@ -103,6 +105,10 @@ impl Texture {
             gl::ActiveTexture(gl::TEXTURE0 + slot);
             gl::BindTexture(gl::TEXTURE_2D, self.renderer_id);
         });
+    }
+
+    pub fn renderer_id(&self) -> u32 {
+        self.renderer_id
     }
 
     pub fn unbind(&self) {
