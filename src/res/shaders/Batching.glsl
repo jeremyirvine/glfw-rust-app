@@ -28,15 +28,9 @@ in float fsh_TextureIndex;
 
 out vec4 Color;
 
-uniform sampler2D u_Texture0;
-uniform sampler2D u_Texture1;
+uniform sampler2D u_Textures[2];
 
 void main() {
     int index = int(fsh_TextureIndex);
-
-    if (fsh_TextureIndex == 0.0f) {
-        Color = texture(u_Texture0, fsh_TextureCoord);
-    } else {
-        Color = texture(u_Texture1, fsh_TextureCoord);
-    }
+    Color = texture(u_Textures[index], fsh_TextureCoord);
 }

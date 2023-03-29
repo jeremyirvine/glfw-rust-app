@@ -133,9 +133,7 @@ impl Default for TestBatchRendering {
         let rust_texture = Texture::new("src/res/textures/rust.png", 1);
 
         shader.bind();
-        //shader.uniform_vec_int("u_Textures", &vec![0, 1]);
-        shader.uniform_1i("u_Texture0", 0);
-        shader.uniform_1i("u_Texture1", 1);
+        shader.uniform_1iv("u_Textures", vec![0, 1]);
         shader.unbind();
 
         Self {

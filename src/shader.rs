@@ -150,17 +150,10 @@ impl Shader {
         });
     }
 
-    pub fn uniform_vec_float(&self, location: impl Into<String>, val: &Vec<f32>) {
+    pub fn uniform_1iv(&self, location: impl Into<String>, val: Vec<GLint>) {
         let location = self.uniform_location(location.into());
         gl_call!({
-            gl::Uniform1fv(location, 1, val.as_ptr());
-        });
-    }
-
-    pub fn uniform_vec_int(&self, location: impl Into<String>, val: &Vec<GLint>) {
-        let location = self.uniform_location(location.into());
-        gl_call!({
-            gl::Uniform1iv(location, 1, val.as_ptr());
+            gl::Uniform1iv(location, val.len() as i32, val.as_ptr());
         });
     }
 

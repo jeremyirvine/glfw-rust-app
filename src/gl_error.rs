@@ -58,6 +58,7 @@ pub fn gl_log_errors(file: impl Display, line: impl Display, statement: String) 
 
         error = unsafe { gl::GetError() };
         errored = true;
+        //panic!("Stopped execution, OpenGL generated an error");
     }
     errored
 }
