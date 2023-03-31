@@ -2,6 +2,7 @@ use std::ffi::c_void;
 
 use gl::types::GLuint;
 use glcall_macro::gl_call;
+use memoffset::offset_of;
 use nalgebra_glm as glm;
 
 use crate::{
@@ -11,39 +12,74 @@ use crate::{
 
 use super::TestableID;
 
+pub fn gen_quad_indices(count: u32) -> Vec<u32> {
+    let i = (0..count).map(|c| {
+        vec![0, 1, 2, 2, 3, 0]
+            .iter()
+            .map(|i| i + (c * 4))
+            .collect::<Vec<u32>>()
+    });
+    i.into_iter().flatten().collect()
+}
+
+pub fn gen_quad_vertices(x: f32, y: f32, texture_index: f32) -> Vec<Vertex> { 
+    let size = 100.0;
+
+    #[rustfmt::skip]
+    let vertices = vec![
+        Vertex::new([x,        y,        0.0],  [0.18, 0.6, 0.96, 1.0], [0.0, 0.0], texture_index),
+        Vertex::new([x + size, y,        0.0],  [0.18, 0.6, 0.96, 1.0], [1.0, 0.0], texture_index),
+        Vertex::new([x + size, y + size, 0.0],  [0.18, 0.6, 0.96, 1.0], [1.0, 1.0], texture_index),
+        Vertex::new([x,        y + size, 0.0],  [0.18, 0.6, 0.96, 1.0], [0.0, 1.0], texture_index),
+    ];
+
+    vertices
+}
+
+#[repr(C)]
+pub struct Vertex {
+    pub position: [f32; 3],
+    pub color: [f32; 4],
+    pub texture_coords: [f32; 2],
+    pub texture_index: f32,
+
+    renderer_id: u32,
+}
+
+impl Vertex {
+    pub fn new(
+        position: [f32; 3],
+        color: [f32; 4],
+        texture_coords: [f32; 2],
+        texture_index: f32,
+    ) -> Self {
+        Self {
+            position,
+            color,
+            texture_coords,
+            texture_index,
+
+            renderer_id: 0,
+        }
+    }
+}
+
 pub struct TestBatchRendering {
     vao: u32,
+    vbo: u32,
     shader: Shader,
 
     model: glm::Vec3,
 
     phone_texture: Texture,
     rust_texture: Texture,
+
+    quad_0_position: [f32; 2],
 }
 
 impl Default for TestBatchRendering {
     fn default() -> Self {
-        #[rustfmt::skip]
-        let vertices: Vec<f32> = vec![
-            // Quad 1
-            -50.,  50., 0.0,        0.18, 0.6, 0.96, 1.0,    0.0, 1.0,    0.0,
-             50.,  50., 0.0,        0.18, 0.6, 0.96, 1.0,    1.0, 1.0,    0.0,
-             50., -50., 0.0,        0.18, 0.6, 0.96, 1.0,    1.0, 0.0,    0.0,
-            -50., -50., 0.0,        0.18, 0.6, 0.96, 1.0,    0.0, 0.0,    0.0,
-                    
-            // Quad 2
-             100.,  50., 0.0,       1.0, 0.96, 0.24, 1.0,    0.0, 1.0,    1.0,
-             200.,  50., 0.0,       1.0, 0.96, 0.24, 1.0,    1.0, 1.0,    1.0,
-             200., -50., 0.0,       1.0, 0.96, 0.24, 1.0,    1.0, 0.0,    1.0,
-             100., -50., 0.0,       1.0, 0.96, 0.24, 1.0,    0.0, 0.0,    1.0,
-        ];
-
-        #[rustfmt::skip]
-        let indices: Vec<GLuint> = vec![
-            0,1,2,2,3,0,
-
-            4,5,6,6,7,4
-        ];
+        let indices = gen_quad_indices(2);
 
         let shader = ShaderBuilder::default()
             .with_shader_source(include_str!("../res/shaders/Batching.glsl").into())
@@ -64,9 +100,9 @@ impl Default for TestBatchRendering {
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                (vertices.len() * std::mem::size_of::<f32>()) as isize,
-                &vertices[0] as *const f32 as *const c_void,
-                gl::STATIC_DRAW,
+                std::mem::size_of::<Vertex>() as isize * 1000,
+                std::ptr::null(),
+                gl::DYNAMIC_DRAW,
             );
 
             // Vertices
@@ -76,8 +112,8 @@ impl Default for TestBatchRendering {
                 3,
                 gl::FLOAT,
                 gl::FALSE,
-                (10 * std::mem::size_of::<f32>()) as i32,
-                std::ptr::null(),
+                std::mem::size_of::<Vertex>() as i32,
+                offset_of!(Vertex, position) as *const c_void,
             );
 
             // Color
@@ -87,8 +123,8 @@ impl Default for TestBatchRendering {
                 4,
                 gl::FLOAT,
                 gl::FALSE,
-                (10 * std::mem::size_of::<f32>()) as i32,
-                12 as *const c_void,
+                std::mem::size_of::<Vertex>() as i32,
+                offset_of!(Vertex, color) as *const c_void,
             );
 
             // Texture Coords
@@ -98,8 +134,8 @@ impl Default for TestBatchRendering {
                 2,
                 gl::FLOAT,
                 gl::FALSE,
-                (10 * std::mem::size_of::<f32>()) as i32,
-                28 as *const c_void,
+                std::mem::size_of::<Vertex>() as i32,
+                offset_of!(Vertex, texture_coords) as *const c_void,
             );
 
             // Texture Index
@@ -109,8 +145,8 @@ impl Default for TestBatchRendering {
                 1,
                 gl::FLOAT,
                 gl::FALSE,
-                (10 * std::mem::size_of::<f32>()) as i32,
-                36 as *const c_void,
+                std::mem::size_of::<Vertex>() as i32,
+                offset_of!(Vertex, texture_index) as *const c_void,
             );
         });
 
@@ -139,16 +175,33 @@ impl Default for TestBatchRendering {
         Self {
             shader,
             vao,
+            vbo,
             model: glm::vec3(200., 200., 0.),
             phone_texture,
             rust_texture,
+            quad_0_position: [100., 100.],
         }
     }
 }
 
 impl Testable for TestBatchRendering {
     fn render(&self, (width, height): (f32, f32), _renderer: &crate::renderer::Renderer) {
+        let x = self.quad_0_position[0];
+        let y = self.quad_0_position[1];
+
+        let mut vertices = Vec::<Vertex>::new();
+        vertices.extend(gen_quad_vertices(x, y, 0.0));
+        vertices.extend(gen_quad_vertices(0., 0., 1.0));
+
         gl_call!({
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo);
+            gl::BufferSubData(
+                gl::ARRAY_BUFFER,
+                0,
+                (vertices.len() * std::mem::size_of::<Vertex>()) as isize,
+                &vertices[0] as *const Vertex as *const c_void,
+            );
+
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         });
@@ -160,8 +213,6 @@ impl Testable for TestBatchRendering {
 
         self.shader.bind();
         self.shader.uniform_mat4("u_MVP", &mvp);
-        self.phone_texture.bind(0);
-        self.rust_texture.bind(1);
 
         gl_call!({
             gl::BindTextureUnit(0, self.phone_texture.renderer_id());
@@ -181,6 +232,8 @@ impl Testable for TestBatchRendering {
             600.,
         )
         .build();
+
+        ui.drag_float2(&str_to_imstr("Quad 1 Position"), &mut self.quad_0_position).build();
     }
 
     fn update(&mut self, _delta_time: f32) {}
