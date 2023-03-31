@@ -6,7 +6,7 @@ use quote::{quote, ToTokens};
 /// Wraps one or more gl::xxxx calls in both unsafe and OpenGl error handling code
 ///
 /// # External Use
-/// If you are going to be using this macro outside of [jeremyirvine/3DGame](https://github.com/jeremyirvine/3DGame), 
+/// If you are going to be using this macro outside of [jeremyirvine/glfw-rust-app](https://github.com/jeremyirvine/glfw-rust-app), 
 /// you will need to supply 2 `crate::` level exports
 /// ```rust 
 /// pub fn gl_clear_errors()
