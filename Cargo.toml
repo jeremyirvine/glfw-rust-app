@@ -12,6 +12,8 @@ nalgebra-glm = "0.18.0"
 imgui-glfw-rs = { path = "P:/Git/imgui-glfw-rs" }
 enum-iterator = "1.4.0"
 memoffset = "0.8.0"
+rusttype = "0.9.3"
+image = "0.24.6"
 
 [features]
 console = []

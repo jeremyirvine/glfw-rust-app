@@ -48,8 +48,8 @@ impl ShaderBuilder {
         self.with_fragment(frag_src)?.with_vertex(vert_src)
     }
 
-    pub fn with_shader(self, path: String) -> Result<Self, ::std::io::Error> {
-        let shader_source_bin = ::std::fs::read(path)?;
+    pub fn with_shader(self, path: impl Into<String>) -> Result<Self, ::std::io::Error> {
+        let shader_source_bin = ::std::fs::read(path.into())?;
         let shader_source = String::from_utf8_lossy(&shader_source_bin).to_string();
         self.with_shader_source(shader_source)
     }

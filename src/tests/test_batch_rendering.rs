@@ -22,7 +22,7 @@ pub fn gen_quad_indices(count: u32) -> Vec<u32> {
     i.into_iter().flatten().collect()
 }
 
-pub fn gen_quad_vertices(x: f32, y: f32, texture_index: f32) -> Vec<Vertex> { 
+pub fn gen_quad_vertices(x: f32, y: f32, texture_index: f32) -> Vec<Vertex> {
     let size = 100.0;
 
     #[rustfmt::skip]
@@ -233,7 +233,8 @@ impl Testable for TestBatchRendering {
         )
         .build();
 
-        ui.drag_float2(&str_to_imstr("Quad 1 Position"), &mut self.quad_0_position).build();
+        ui.drag_float2(&str_to_imstr("Quad 1 Position"), &mut self.quad_0_position)
+            .build();
     }
 
     fn update(&mut self, _delta_time: f32) {}

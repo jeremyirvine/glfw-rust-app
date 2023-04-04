@@ -5,7 +5,8 @@ use crate::{renderer::Renderer, str_to_imstr};
 
 use super::{
     test_batch_rendering::TestBatchRendering, test_clear_color::TestClearColor,
-    test_texture::TestTexture, TestType, TestTypeInternal, Testable,
+    test_text_rendering::TestTextRendering, test_texture::TestTexture, TestType, TestTypeInternal,
+    Testable,
 };
 
 #[derive(Default)]
@@ -55,6 +56,9 @@ impl TestMenu {
             TestType::Texture => TestTypeInternal::Texture(TestTexture::default()),
             TestType::BatchRendering => {
                 TestTypeInternal::BatchRendering(TestBatchRendering::default())
+            }
+            TestType::TextRendering => {
+                TestTypeInternal::TextRendering(TestTextRendering::default())
             }
         });
     }
