@@ -414,6 +414,7 @@ dependencies = [
 [[package]]
 name = "imgui-glfw-rs"
 version = "0.4.0"
+source = "git+https://github.com/jeremyirvine/imgui-glfw-rs#b673807b7882d79f78ca80c1336f22c384b611e5"
 dependencies = [
  "glfw",
  "imgui",

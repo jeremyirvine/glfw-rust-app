@@ -9,7 +9,7 @@ glcall_macro = { path = "glcall_macro" }
 stb_image = "0.2.5"
 glm = "0.2.3"
 nalgebra-glm = "0.18.0"
-imgui-glfw-rs = { path = "P:/Git/imgui-glfw-rs" }
+imgui-glfw-rs = { git = "https://github.com/jeremyirvine/imgui-glfw-rs" }
 enum-iterator = "1.4.0"
 memoffset = "0.8.0"
 rusttype = "0.9.3"
